@@ -15,3 +15,22 @@ Benefit of column-oriented DB:
 ### Column-oriented
 <img width="630" height="258" alt="image" src="https://github.com/user-attachments/assets/84a00a5e-c913-45b7-84ee-06ceb8ab2dd8" />
 
+## Architecture
+
+<img width="1024" height="655" alt="image" src="https://github.com/user-attachments/assets/48546b78-19e3-4c25-a973-7888a766c715" />
+
+**Main Layers**:
+1. Query Processing: SQL dialect/ PRQL / KQL
+2. Storage
+3. Integration
+
+**Access Layer**: manages user sessions and communication with applications
+
+**Storage Layer Table Engines**:
+1. MergeTree: LSM Tree -> horizontal sorted parts which are continuously merged
+2. Special-purpose: speed up or distribute query execution. Example: Dictionary for caching
+3. Virtual table engines: bidirectional data exchange with external systems (relational databases, publish/subscribe systems, key/value stores, data lakes, files in object storage)
+
+**Sharding**: Partitions a table into shards based on expression, to process data sets which exceed the capacity of individual nodes
+
+## Use Cases
