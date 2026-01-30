@@ -34,3 +34,24 @@ Benefit of column-oriented DB:
 **Sharding**: Partitions a table into shards based on expression, to process data sets which exceed the capacity of individual nodes
 
 ## Use Cases
+
+1. Real-time analytics
+
+**Example: Vimeo**
+- Their original stack used Apache Phoenix on HBase, but it increasingly suffered from GC pauses, server failures, and slow queries as use-cases and data volume grew.
+- Clickhouse: ~10× faster queries and 2–3× better storage efficiency
+- Real-time session events (loads, plays, etc.) are fed via Apache Spark streaming, which computes deltas before insertion to ClickHouse, reducing complexity and improving performance.
+- Materialized views pre-aggregate data (e.g., per video or time window), dramatically speeding up queries
+
+2. Observability
+
+**Example: Ebay**
+- Needed a scalable way to handle huge volumes of OLAP to perform log aggregation
+- ClickHouse clusters are deployed across multiple regions/data centers using custom Kubernetes operators for automated deployment and management
+
+3. Data warehousing
+
+**Example: Microsoft**
+- 
+
+5. Machine learning and GenAI
