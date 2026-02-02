@@ -54,3 +54,26 @@ Benefit of column-oriented DB:
 
 <img width="1295" height="327" alt="image" src="https://github.com/user-attachments/assets/1b902bf3-7157-40d1-9b44-d1ccb870f161" />
 
+# MergeTree table engine
+
+The most commonly used and most robust table engines in ClickHouse, designed for high data ingest rates and huge data volumes. Insert operations create table parts which are merged by a background process with other table parts.
+
+Features:
+- Primary key = sort order, stored as a clustered index over granules (≈8K rows), not individual rows → memory-efficient and fast disk reads.
+- Flexible partitioning via expressions, with partition pruning to skip irrelevant data during queries.
+- Replication support across nodes for HA, failover, and zero-downtime upgrades.
+- Query optimization features, including statistics and sampling methods.
+
+Query clauses:
+- ```ENGINE``` = Name and parameters of the engine. ```ENGINE = MergeTree()```. The MergeTree engine has no parameters.
+- ```ORDER BY```. If no PK is defined, then it orders by sorting key. If no sorting is required, use syntax ```ORDER BY tuple()```.
+- ```PARTITION BY```. Does not speed up queries unlike ORDER BY.
+- ```PRIMARY KEY```
+- ```SAMPLE BY```  = If specified, it must be contained in the primary key. The sampling expression must result in an unsigned integer. Example: ```SAMPLE BY intHash32(UserID) ORDER BY (CounterID, EventDate, intHash32(UserID))```
+- ```TTL``` = A list of rules that specify what to do with rows after a certain time. (Default is delete, but can also move or aggregate) Example (default: ```TTL event_date + INTERVAL 30 DAY```) or (```TTL event_date + INTERVAL 7 DAY TO DISK 'cold'```)
+
+Example Settings:
+```ENGINE MergeTree() PARTITION BY toYYYYMM(EventDate) ORDER BY (CounterID, EventDate, intHash32(UserID)) SAMPLE BY intHash32(UserID) SETTINGS index_granularity=8192```
+
+
+
