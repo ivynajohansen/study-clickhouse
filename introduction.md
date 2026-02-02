@@ -49,3 +49,8 @@ Benefit of column-oriented DB:
 - Needed interactive, self-service analytics over petabytes of web data; legacy and third-party tools couldn’t deliver fast ad-hoc queries and were costly to license and operate.
 - With ClickHouse, queries dropped to seconds-level latency, even at 100k+ queries/day, enabled by columnar storage, compression, and query optimizations (joins, conditions, sampling).
 - Saving millions in licensing costs, while scaling reliably to thousands of users with fewer resources.
+
+# Starting Clickhouse
+
+<img width="1295" height="327" alt="image" src="https://github.com/user-attachments/assets/1b902bf3-7157-40d1-9b44-d1ccb870f161" />
+
