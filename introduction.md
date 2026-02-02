@@ -35,23 +35,17 @@ Benefit of column-oriented DB:
 
 ## Use Cases
 
-1. Real-time analytics
-
 **Example: Vimeo**
 - Their original stack used Apache Phoenix on HBase, but it increasingly suffered from GC pauses, server failures, and slow queries as use-cases and data volume grew.
 - Clickhouse: ~10× faster queries and 2–3× better storage efficiency
 - Real-time session events (loads, plays, etc.) are fed via Apache Spark streaming, which computes deltas before insertion to ClickHouse, reducing complexity and improving performance.
 - Materialized views pre-aggregate data (e.g., per video or time window), dramatically speeding up queries
 
-2. Observability
-
 **Example: Ebay**
 - Needed a scalable way to handle huge volumes of OLAP to perform log aggregation
 - ClickHouse clusters are deployed across multiple regions/data centers using custom Kubernetes operators for automated deployment and management
 
-3. Data warehousing
-
 **Example: Microsoft**
-- 
-
-5. Machine learning and GenAI
+- Needed interactive, self-service analytics over petabytes of web data; legacy and third-party tools couldn’t deliver fast ad-hoc queries and were costly to license and operate.
+- With ClickHouse, queries dropped to seconds-level latency, even at 100k+ queries/day, enabled by columnar storage, compression, and query optimizations (joins, conditions, sampling).
+- Saving millions in licensing costs, while scaling reliably to thousands of users with fewer resources.
