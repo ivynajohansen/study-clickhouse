@@ -75,5 +75,35 @@ Query clauses:
 Example Settings:
 ```ENGINE MergeTree() PARTITION BY toYYYYMM(EventDate) ORDER BY (CounterID, EventDate, intHash32(UserID)) SAMPLE BY intHash32(UserID) SETTINGS index_granularity=8192```
 
+## ReplacingMergeTree
 
+Removes duplicate entries with the same sorting key value during a merge. Merges are unplanned.
+
+Parameters:
+- ```ver```:  Type UInt*, Date, DateTime or DateTime64.
+- ```is_deleted```: Type UInt8. Can only be enabled when ver is used.
+
+## SummingMergeTree
+
+Replaces all the rows with the same sorting key with one row which contains summed values for the columns with the numeric data type.
+
+Parameters:
+- ```columns```: a tuple with the names of columns where values will be summed. (optional, must be numeric)
+
+## AggregatingMergeTree
+
+Processes all columns with the following types:
+- AggregateFunction
+- SimpleAggregateFunction
+
+Use AggregatingMergeTree if it reduces the number of rows by orders.
+
+## CollapsingMergeTree
+
+Adds logic for collapsing rows during the merge process. Asynchronously deletes/collapses pairs of rows if all the fields in a sorting key are equivalent except for the special field Sign (1 or -1). Rows without a pair of opposite valued Sign are kept.
+
+Parameters:
+```Sign```: 1 is a "state" row (containing fields which represent a current valid state) and -1 is a "cancel" row
+
+<img width="547" height="79" alt="image" src="https://github.com/user-attachments/assets/d420e918-caac-44a9-b2b0-b805308f7571" />
 
