@@ -115,6 +115,9 @@ Lookup:
 - if any bit = 0 → not present
 - if all bits = 1 → possibly present
 
+More bits → lower false positive
+More hashes → more accurate but slower
+
 Allows space-efficient testing of set membership at the cost of a slight chance of false positives.
 
 When querying:
