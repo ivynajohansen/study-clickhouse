@@ -1,0 +1,142 @@
+# Skip index types
+
+## minmax index
+
+Stores the minimum and maximum value of a column for each data block.
+
+Example:
+
+```
+CREATE TABLE events
+(
+    event_time DateTime,
+    user_id UInt64,
+    INDEX idx_event_time event_time TYPE minmax GRANULARITY 1
+)
+ENGINE = MergeTree
+ORDER BY event_time;
+```
+
+> 1 Granule = 8192 rows
+
+Good Use cases:
+- Range queries
+- Time filtering
+- Numeric ranges
+
+Example query that benefits:
+
+```
+SELECT * FROM events
+WHERE event_time BETWEEN '2026-03-01' AND '2026-03-05';
+```
+
+## set index
+
+Stores a set of unique values per block (up to a configured limit).
+ClickHouse skips blocks if the queried value is not in the set.
+
+Example:
+
+```
+CREATE TABLE events
+(
+    event_type String,
+    user_id UInt64,
+    INDEX idx_event_type event_type TYPE set(100) GRANULARITY 1
+)
+ENGINE = MergeTree
+ORDER BY user_id;
+```
+
+> set(100) = store up to 100 unique values per block.
+
+Good Use Cases:
+- Columns with low or medium cardinality
+- Equality filters
+
+Example query that benefits:
+
+```
+SELECT *
+FROM events
+WHERE event_type = 'purchase';
+``` 
+
+## text index
+
+A text index in ClickHouse is a full-text inverted index designed for searching words inside large text columns efficiently. Instead of scanning every row, ClickHouse builds a structure mapping: 
+
+`word → list of rows/blocks containing that word`
+
+Example:
+
+```
+CREATE TABLE logs
+(
+    id UInt64,
+    message String,
+
+    INDEX idx_message message TYPE text
+)
+ENGINE = MergeTree
+ORDER BY id;
+```
+
+Example queries that benefit:
+
+```
+SELECT *
+FROM logs
+WHERE message ILIKE '%error%';
+```
+
+or 
+
+```
+SELECT *
+FROM logs
+WHERE hasToken(message, 'timeout');
+```
+
+Good Use Cases:
+- Log search
+- Document/text search
+- Error Detection in Monitoring
+
+## Bloom Filter
+
+A Bloom filter is a bit array + multiple hash functions. 
+Insert:
+- hash element with k functions
+- set those bit positions to 1
+Lookup:
+- compute same hashes
+- if any bit = 0 → not present
+- if all bits = 1 → possibly present
+
+Allows space-efficient testing of set membership at the cost of a slight chance of false positives.
+
+When querying:
+- If Bloom filter says value not present → block skipped
+- If Bloom filter says value may exist → block scanned
+
+Takes a single optional parameter of the allowed "false positive" rate between 0 and 1 (if unspecified, .025 is used).
+
+Example:
+
+```
+CREATE TABLE events
+(
+    user_id UInt64,
+    event_type String,
+
+    INDEX idx_user user_id TYPE bloom_filter(0.01) GRANULARITY 1
+)
+ENGINE = MergeTree
+ORDER BY event_type;
+```
+
+> 0.01 = 1% false positive rate
+
+Best for high-cardinality equality filters. Works well when values are unique and equality queries are frequent.
