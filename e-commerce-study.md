@@ -281,3 +281,51 @@ WHERE event_type='click';
 
 <img width="1291" height="528" alt="image" src="https://github.com/user-attachments/assets/f152a5b9-5575-4bb2-9608-e2efce712ef0" />
 
+Test compression codecs:
+
+```
+ALTER TABLE events
+MODIFY COLUMN price Float32 CODEC(ZSTD);
+```
+
+Build materialized view:
+
+```
+CREATE MATERIALIZED VIEW product_views_mv
+ENGINE = SummingMergeTree
+PARTITION BY toYYYYMM(event_date)
+ORDER BY (event_date, product_id)
+AS
+SELECT
+    toDate(event_time) AS event_date,
+    product_id,
+    count() AS views
+FROM events
+WHERE event_type = 'view'
+GROUP BY
+    event_date,
+    product_id;
+```
+
+## Monitor Internal Behavior:
+
+```
+SELECT *
+FROM system.merges;
+```
+
+```
+SELECT *
+FROM system.mutations;
+```
+
+Recent queries:
+
+```
+SELECT
+    query,
+    query_duration_ms
+FROM system.query_log
+ORDER BY event_time DESC
+LIMIT 10;
+```
