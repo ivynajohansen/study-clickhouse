@@ -226,3 +226,58 @@ SELECT
 FROM events
 GROUP BY product_id;
 ```
+
+## Data Modeling and Performance Optimization
+
+Inspecting partitions:
+
+```
+SELECT
+    table,
+    partition,
+    rows,
+    bytes_on_disk
+FROM system.parts
+WHERE table = 'events'
+AND active = 1;
+```
+
+<img width="1289" height="61" alt="image" src="https://github.com/user-attachments/assets/99b160e2-f0ef-436e-b755-61be16703289" />
+
+Inspecting how a query is going to be executed using `EXPLAIN`:
+
+```
+EXPLAIN
+SELECT *
+FROM events
+WHERE event_time >= now() - INTERVAL 1 HOUR;
+```
+
+<img width="1288" height="181" alt="image" src="https://github.com/user-attachments/assets/11ccfb96-6ee6-47e1-99f2-3d8d413ac7e9" />
+
+```
+SELECT *
+FROM events
+PREWHERE event_type = 'click'
+WHERE event_time >= now() - INTERVAL 1 HOUR;
+```
+
+> PREWHERE = an optimization of WHERE that filters rows earlier while reading data from disk, reducing the amount of data loaded.
+
+<img width="1294" height="299" alt="image" src="https://github.com/user-attachments/assets/5cdd4a7b-a3bb-4540-859e-3f0c89636d15" />
+
+Primary key only helps with the ORDER BY columns, but we may frequently filter by event_type. So create a data skipping index:
+
+```
+ALTER TABLE events
+ADD INDEX idx_event_type event_type TYPE set(100) GRANULARITY 4;
+
+ALTER TABLE events MATERIALIZE INDEX idx_event_type;
+
+SELECT *
+FROM events
+WHERE event_type='click';
+```
+
+<img width="1291" height="528" alt="image" src="https://github.com/user-attachments/assets/f152a5b9-5575-4bb2-9608-e2efce712ef0" />
+
